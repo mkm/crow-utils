@@ -1,0 +1,30 @@
+#!/bin/bash
+
+needle=$1
+pick=$2
+
+dir=$(locate --regexp "/$needle\$")
+if [ ! "$dir" ]
+then
+    exit 1
+fi
+rescount=$(echo "$dir" | wc -l)
+if [ "$rescount" -eq 1 ]
+then
+    echo -n $dir
+    exit 0
+fi
+if [ $pick ]
+then
+    echo "$dir" | head -n $pick | tail -n 1
+    exit 0
+fi
+IFS="
+"
+i=1
+for path in $dir
+do
+    echo "$i: $path"
+    i=$(($i + 1))
+done
+exit 2

@@ -1,0 +1,99 @@
+#!/bin/bash
+
+function is_on() {
+    [ "$1" == "param_on" -o "$1" == "conf_on" ]
+}
+
+function is_param() {
+    [ "$1" == "param_on" -o "$1" == "param_off" ]
+}
+
+. "$HOME/.openrc"
+
+while [ "$(echo "$1" | grep -e ^-)" ]
+do
+    case "$1" in
+        "-c" | "--cli" | "-G" | "--no-gui")
+            opt_prefer_cli="param_on"
+            ;;
+        "-g" | "--gui" | "-C" | "--no-cli")
+            opt_prefer_cli="param_off"
+            ;;
+        "-b" | "--background")
+            opt_gui_bg="param_on"
+            ;;
+        "-B" | "--no-background")
+            opt_gui_bg="param_off"
+            ;;
+        "--")
+            shift
+            break
+            ;;
+        *)
+            echo "unrecognised option '$1'"
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+filename="$1"
+extension="${filename##*.}"
+
+if [ "$extension" = "$filename" ]
+then
+    if [ -e "$filename" -a "$(file -- "$filename" | grep text)" ]
+    then
+        extension="file_text"
+    else
+        extension="unknown"
+    fi
+fi
+
+gui_cmd="gui_$extension"
+cli_cmd="cli_$extension"
+cmd_opt="opt_$extension"
+
+if [ "${!cmd_opt}" ]
+then
+    for optsuf in ${!cmd_opt}
+    do
+        opt="opt_$optsuf"
+        if ! is_param "${!opt}"
+        then
+            printf -v "$opt" "conf_on"
+        fi
+    done
+fi
+
+if [ -z "$filename" ]
+then
+    echo "No file given"
+    exit 1
+fi
+
+if [ ! -e "$filename" ]
+then
+    echo "File does not exist"
+    exit 2
+fi
+
+if [ "${!gui_cmd}" -a "$DISPLAY" ] && ! is_on "$opt_prefer_cli"
+then
+    if is_on "$opt_gui_bg"
+    then
+        ${!gui_cmd} "$filename" &
+    else
+        ${!gui_cmd} "$filename"
+    fi
+    exit $?
+fi
+
+if [ "${!cli_cmd}" ]
+then
+    ${!cli_cmd} "$filename"
+    exit $?
+fi
+
+echo "No handler for '$extension'"
+exit 4
