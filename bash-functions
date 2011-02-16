@@ -15,3 +15,25 @@ j() {
 
     cd $dir
 }
+
+jal() {
+    dir=$(finddir $@)
+    ret=$?
+    if [ "$ret" -eq "1" ]
+    then
+        echo "No such directory."
+        return 1
+    fi
+
+    if [ "$ret" -eq "2" ]
+    then
+        echo "$dir"
+        return 2
+    fi
+
+    pushd $dir
+}
+
+ret() {
+    popd
+}
