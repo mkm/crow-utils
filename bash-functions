@@ -37,3 +37,13 @@ jal() {
 ret() {
     popd
 }
+
+lcd() {
+    cd $1
+    ls
+}
+
+cdm() {
+    mkdir -p $1
+    cd $1
+}
