@@ -3,6 +3,11 @@
 needle=$1
 pick=$2
 
+if [ ! $needle ]
+then
+    exit 11
+fi
+
 dirs_raw=($(locate --regexp "/$needle\$"))
 dirs=()
 j=0
