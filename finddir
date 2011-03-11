@@ -3,28 +3,34 @@
 needle=$1
 pick=$2
 
-dir=$(locate --regexp "/$needle\$")
-if [ ! "$dir" ]
+dirs_raw=($(locate --regexp "/$needle\$"))
+dirs=()
+j=0
+for i in $(seq 0 $((${#dirs_raw[@]} - 1)))
+do
+    if [ -d "${dirs_raw[$i]}" ]
+    then
+        dirs[$j]=${dirs_raw[$i]}
+        j=$(($j + 1))
+    fi
+done
+dirlen=${#dirs[@]}
+if [ "$dirlen" = 0 ]
 then
     exit 1
 fi
-rescount=$(echo "$dir" | wc -l)
-if [ "$rescount" -eq 1 ]
+if [ "$dirlen" -eq 1 ]
 then
-    echo -n $dir
+    echo ${dirs[0]}
     exit 0
 fi
 if [ $pick ]
 then
-    echo "$dir" | head -n $pick | tail -n 1
+    echo ${dirs[$pick]}
     exit 0
 fi
-IFS="
-"
-i=1
-for path in $dir
+for i in $(seq 0 $(($dirlen - 1)))
 do
-    echo "$i: $path"
-    i=$(($i + 1))
+    echo "$i: ${dirs[$i]}"
 done
 exit 2
