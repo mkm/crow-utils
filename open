@@ -25,6 +25,10 @@ do
         "-B" | "--no-background")
             opt_gui_bg="param_off"
             ;;
+        "-t" | "--type")
+            shift
+            force_extension="$1"
+            ;;
         "--")
             shift
             break
@@ -39,6 +43,10 @@ done
 
 filename="$1"
 extension="${filename##*.}"
+if [ $force_extension ]
+then
+    extension="$force_extension"
+fi
 
 if [ "$extension" = "$filename" ]
 then
